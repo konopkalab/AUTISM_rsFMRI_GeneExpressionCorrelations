@@ -15,16 +15,6 @@ Pre-print URL: https://www.medrxiv.org/content/10.1101/2021.01.07.21249281v1
 | directory | contents | code |
 | --------- | -------- | -------- |
 | [`rawdata`](rawdata/) | Input/Output data from initial processing and quality check. | 01_Data_processing_QC.R \ 02_Data_Preprocess_QC_Visualization.R \ 03_Imaging_Processing.R|
-| [`DGE`](DGE/) | Output data from DGE analysis. | 02_DGE_Analysis.R |
+| [`Permuted_Matches_Outputs`](Permuted_Matches_Outputs/) | Output data from correlative analysis. | 04_Permuted_Matches_fALFF.R \ 05_fALFF_LOR_Analysis.R \ 06_Permuted_Matches_ReHo.R \ 07_ReHo_LOR_Analysis.R|
 | [`MAGMA`](MAGMA/) | Output data from MAGMA gene set analysis. | 03_MAGMA.sh |
 | [`Shiny_App`](Shiny_App/) | Input data to visualize the data. | HippoAxisSeq_App.R |
-
-## Explore the data
-
-We have provided an interactive web app that allow you to explore the data at single nucleus level. 
-
-* https://human-hippo-axis.cells.ucsc.edu/
-
-* Shiny app (Please download the data and build it using the HippoAxisSeq_App.R code).
-
-![](HippoAxisSeq.gif)]
