@@ -14,7 +14,7 @@ Pre-print URL: https://www.medrxiv.org/content/10.1101/2021.01.07.21249281v1
 
 | directory | contents | code |
 | --------- | -------- | -------- |
-| [`rawdata`](rawdata/) | Output data from initial processing and quality check. | 01_Data_processing_QC.R\02_Data_Preprocess_QC_Visualization.R\03_Imaging_Processing.R|
+| [`rawdata`](rawdata/) | Input/Output data from initial processing and quality check. | 01_Data_processing_QC.R \ 02_Data_Preprocess_QC_Visualization.R \ 03_Imaging_Processing.R|
 | [`DGE`](DGE/) | Output data from DGE analysis. | 02_DGE_Analysis.R |
 | [`MAGMA`](MAGMA/) | Output data from MAGMA gene set analysis. | 03_MAGMA.sh |
 | [`Shiny_App`](Shiny_App/) | Input data to visualize the data. | HippoAxisSeq_App.R |
