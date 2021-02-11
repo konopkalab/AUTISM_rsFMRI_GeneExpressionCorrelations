@@ -15,6 +15,7 @@ Pre-print URL: https://www.medrxiv.org/content/10.1101/2021.01.07.21249281v1
 | directory | contents | code |
 | --------- | -------- | -------- |
 | [`rawdata`](rawdata/) | Input/Output data of the initial processing and quality check. | 01_Data_processing_QC.R \ 02_Data_Preprocess_QC_Visualization.R \ 03_Imaging_Processing.R|
+| [`dge`](dge/) | Output of the Differential expression analysis. | 01_Data_Preprocess_QC.R|
 | [`Permuted_Matches_Outputs`](Permuted_Matches_Outputs/) | Output data of the correlative analysis. | 04_Permuted_Matches_fALFF.R \ 05_fALFF_LOR_Analysis.R \ 06_Permuted_Matches_ReHo.R \ 07_ReHo_LOR_Analysis.R|
 | [`imaging_visualizations`](imaging_visualizations/) | Output data of the visualizations for rs-fMRI data. | 08_Imaging_Visualizations.R |
 | [`integrative_results`](integrative_results/) | Output of the integration analysis. | 09_Data_Integration.R |
