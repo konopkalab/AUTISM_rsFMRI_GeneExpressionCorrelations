@@ -26,5 +26,5 @@ Pre-print URL: https://www.medrxiv.org/content/10.1101/2021.01.07.21249281v1
 | [`enrichments_developmental`](enrichments_developmental/) | Output of the gene set enrichment analysis for developmental clusters. | 13_Run_Enrichment.sh |
 | [`enrichments_dcgenes`](enrichments_dcgenes/) | Output of the gene set enrichment analysis for the differentially correlated genes. | 14_Run_Enrichment_DCgenes.sh |
 | [`supp_tables`](supp_tables/) | Output of the database creation. | 15_Database.R |
-| [`networking`](networking/) | Output of the PPI network analysis. | 17_PPI_Networks.R|
+| [`networking`](networking/) | Output of the PPI network analysis. | 16_PPI_Networks.R|
 
