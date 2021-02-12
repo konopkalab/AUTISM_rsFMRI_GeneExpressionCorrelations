@@ -1,8 +1,7 @@
 Association between resting-state functional brain connectivity and gene expression is altered in autism spectrum disorder 
+==========================
 
 ![](Berto_Figure1.jpg)
-
-==========================
 
 This repository contains analysis code for the rs-fMRI ~ gene expression project carried out by researchers at the [Konopka Lab, UTSW](http://konopkalab.org/) and [Montillo Lab, UTSW](https://aamontillo.net/)
 
