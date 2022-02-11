@@ -79,6 +79,7 @@ if(file.access(opt$inputFile) ==-1){
 } else{
 	inputTable = read.table(opt$inputFile,sep="\t",header=T);
 	colnames(inputTable) = c("Gene","DEFINITION")
+	inputTable$DEFINITION <- as.factor(inputTable$DEFINITION)
 	Genes=as.data.frame(table(inputTable$DEFINITION))
 }
 print("Input obtained")
@@ -181,10 +182,6 @@ OR <- FisherOR %>%
     rename(OR = value)
 
 p <- Reduce(dplyr::left_join, list(p, OR))
-p$OR[!is.finite(p$OR)] <- max(p$OR[is.finite(p$OR)])
-p$log[p$log < 1.3] <- NA
-p$OR<- ifelse(is.na(p$log), p$log, p$OR)
-
 
 #Graph plotting related codes
 if(opt$plot){
@@ -218,6 +215,24 @@ if(opt$plot){
 	if(opt$plot){
 		suppressPackageStartupMessages(require(ggpubr))
 		#pdf(paste(opt$out, "_Enrichment.pdf", sep=""))
+		ggbarplot(p, "variable", "log",
+		  fill = "Module", color = "Module", palette = "Set1",
+		  label = FALSE,
+		  position = position_dodge(0.9),
+		  orientation = "horiz") +
+		  geom_hline(yintercept=1.3, linetype="dashed", color = "black") + 
+		  facet_wrap(.~Module) + 
+		  theme_classic() + 
+		  theme(legend.position = "none") +
+		  xlab("")
+		ggsave(paste(opt$out, "_Barplot_Enrichment.pdf", sep=""),width=opt$width+2,height=opt$height)		
+
+
+		p$OR[!is.finite(p$OR)] <- max(p$OR[is.finite(p$OR)])
+		p$log[p$log < 1.3] <- NA
+		p$OR<- ifelse(is.na(p$log), p$log, p$OR)
+
+
 		ggscatter(p, 
         	x = "variable",
         	y = "Module",
