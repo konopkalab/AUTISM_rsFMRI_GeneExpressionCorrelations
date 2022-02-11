@@ -179,7 +179,7 @@ ppiNet <- function(molecularIDs = NULL,file = NULL,speciesID = 9606,Score = 100,
     # The column name must be gene
     names(new_genes) <- "gene"
     # Loading the STRING database
-    database <- STRINGdb$new(version="10",species=speciesID,score_threshold=Score,input_directory="")
+    database <- STRINGdb$new(version="11",species=speciesID,score_threshold=Score,input_directory="")
     # Obtaining the STRING ID to each identifier
     mapped <- database$map(new_genes,"gene",removeUnmappedRows = TRUE)
     # Removing the STRING ID duplicated
