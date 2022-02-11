@@ -1,17 +1,22 @@
 rm(list=ls())
-suppressPackageStartupMessages(library(ggplot2))
-suppressPackageStartupMessages(library(pls))
-suppressPackageStartupMessages(library(ggrepel))
-suppressPackageStartupMessages(library(effsize))
-suppressPackageStartupMessages(library(reshape2))
-suppressPackageStartupMessages(library(plyr))
-suppressPackageStartupMessages(library(ggpubr))
-suppressPackageStartupMessages(library(rio))
-suppressPackageStartupMessages(library(here))
-suppressPackageStartupMessages(library(tidyverse))
-suppressPackageStartupMessages(library(STRINGdb))
-suppressPackageStartupMessages(library(igraph))
-source("Utils.R")
+suppressPackageStartupMessages({
+library(ggplot2)
+library(ggrepel)
+library(reshape2)
+library(ggpubr)
+library(tidyverse)
+library(here)
+library(STRINGdb)
+library(igraph)
+library(rio)
+library(effsize)
+library(httr)
+})
+source("UTILS/Utils.R")
+
+#set_config(
+#  use_proxy(url="proxy.swmed.edu", port=3128,username="S157784",password="Arianna2103!")
+#)
 
 # Create Output directories
 folder_names <- c("networking")
@@ -19,10 +24,13 @@ sapply(folder_names, dir.create)
 
 #Load the final gene list of differentially correlated genes
 finalgenes = read.table("integrative_results/ASD_fMRI_DevClustered.txt", header = T)
-names <- as.character(unique(finalgenes$Clusters))
+names <- as.character(unique(finalgenes$Direction))
 
 # Create string db
-string_db <- STRINGdb$new( version="10", species=9606, score_threshold=400, input_directory="" )
+string_db <- STRINGdb$new( version="11", species=9606, score_threshold=400, input_directory="" )
+
+bkg <- read.table("UTILS/BrainExpressed_Background.txt")
+string_db$set_background(as.character(bkg$x))
 
 # Loop across all the cool modules
 input <- list()
@@ -32,10 +40,10 @@ enrich <- list()
 pdfname <- list()
 for(i in 1:length(names))
 	{
-		pdfname[[i]]<-paste0("networking/",names[[i]],"_PPI_network.pdf") 
+		pdfname[[i]]<-paste0("networking/",names[[i]],"_PPI_network_BrainExp.pdf") 
 		pdf(file=pdfname[[i]],,width = 5,height=5)
-		input[[i]] <- finalgenes %>% filter(Clusters==names[[i]])
-		mapped[[i]] <- string_db$map(input[[i]], "Gene", removeUnmappedRows = TRUE )
+		input[[i]] <- finalgenes %>% filter(Direction==names[[i]])
+		mapped[[i]] <- string_db$map(input[[i]], "Gene", removeUnmappedRows = TRUE ) #%>% as.data.frame()
 		enrich[[i]] <- string_db$get_ppi_enrichment(mapped[[i]]$STRING_id[1:nrow(input[[i]])])
  		hits[[i]] <- mapped[[i]]$STRING_id[1:nrow(input[[i]])]
 		string_db$plot_network(hits[[i]])
@@ -46,10 +54,10 @@ for(i in 1:length(names))
 # Coexnet ppi
 finalgenes = read.table("integrative_results/ASD_fMRI_DevClustered.txt", header = T)
 
-adult <- finalgenes %>% filter(Clusters == "Adult")
+adult <- finalgenes %>% filter(Direction == "Adult")
 
 ppi <- ppiNet(molecularIDs = as.character(adult$Gene),
-				Score = 400,
+                        Score = 400,
 				evidence = c("neighborhood","coexpression","experiments","combined_score"))
 
 
@@ -69,7 +77,7 @@ plot.igraph(ppi,
 dev.off()
 
 
-adult <- finalgenes %>% filter(Clusters == "EarlyDev")
+adult <- finalgenes %>% filter(Direction == "EarlyDev")
 
 ppi <- ppiNet(molecularIDs = as.character(adult$Gene),
 				Score = 400,
@@ -91,7 +99,7 @@ plot.igraph(ppi,
 dev.off()
 
 
-adult <- finalgenes %>% filter(Clusters == "Stable")
+adult <- finalgenes %>% filter(Direction == "Stable")
 
 ppi <- ppiNet(molecularIDs = as.character(adult$Gene),
 				Score = 400,
