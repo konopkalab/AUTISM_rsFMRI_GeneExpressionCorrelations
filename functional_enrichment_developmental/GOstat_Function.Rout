@@ -1,7 +1,7 @@
 
-R version 3.6.1 (2019-07-05) -- "Action of the Toes"
-Copyright (C) 2019 The R Foundation for Statistical Computing
-Platform: x86_64-apple-darwin15.6.0 (64-bit)
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-apple-darwin17.0 (64-bit)
 
 R is free software and comes with ABSOLUTELY NO WARRANTY.
 You are welcome to redistribute it under certain conditions.
@@ -64,98 +64,9 @@ Type 'q()' to quit R.
 + df[[net]]$adj=p.adjust(df[[net]]$Pvalue,"BH")
 + df[[net]]=df[[net]][df[[net]]$Pvalue < 0.05 & df[[net]]$Count > 5,]
 + }
-Loading required package: AnnotationDbi
-Loading required package: stats4
-Loading required package: BiocGenerics
-Loading required package: parallel
-
-Attaching package: ‘BiocGenerics’
-
-The following objects are masked from ‘package:parallel’:
-
-    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
-    clusterExport, clusterMap, parApply, parCapply, parLapply,
-    parLapplyLB, parRapply, parSapply, parSapplyLB
-
-The following objects are masked from ‘package:stats’:
-
-    IQR, mad, sd, var, xtabs
-
-The following objects are masked from ‘package:base’:
-
-    anyDuplicated, append, as.data.frame, basename, cbind, colnames,
-    dirname, do.call, duplicated, eval, evalq, Filter, Find, get, grep,
-    grepl, intersect, is.unsorted, lapply, Map, mapply, match, mget,
-    order, paste, pmax, pmax.int, pmin, pmin.int, Position, rank,
-    rbind, Reduce, rownames, sapply, setdiff, sort, table, tapply,
-    union, unique, unsplit, which, which.max, which.min
-
-Loading required package: Biobase
-Welcome to Bioconductor
-
-    Vignettes contain introductory material; view with
-    'browseVignettes()'. To cite Bioconductor, see
-    'citation("Biobase")', and for packages 'citation("pkgname")'.
-
-Loading required package: IRanges
-Loading required package: S4Vectors
-
-Attaching package: ‘S4Vectors’
-
-The following object is masked from ‘package:base’:
-
-    expand.grid
-
-
-Loading required package: GOstats
-Loading required package: Category
-Loading required package: Matrix
-
-Attaching package: ‘Matrix’
-
-The following object is masked from ‘package:S4Vectors’:
-
-    expand
-
-Loading required package: graph
-
-
-Attaching package: ‘GOstats’
-
-The following object is masked from ‘package:AnnotationDbi’:
-
-    makeGOGraph
-
 > dir.create("BP/")
 > net=levels(mod$Class)
 > for (i in 1:length(df)) write.table(df[[i]], file = paste("BP/BP_", net[[i]], ".txt",sep = ""),sep="\t",quote=F)
-> 
-> 
-> list=list()
-> df=list()
-> for (net in levels(mod$Class)) {
-+ list[[net]]=mod[mod$Class == net,]
-+ df[[net]]=dogo(list[[net]]$Gene,uni,species="human", goP = 1,cond=FALSE, ontology = "MF")
-+ df[[net]]$adj=p.adjust(df[[net]]$Pvalue,"BH")
-+ df[[net]]=df[[net]][df[[net]]$Pvalue < 0.05 & df[[net]]$Count > 5,]
-+ }
-> dir.create("MF/")
-> net=levels(mod$Class)
-> for (i in 1:length(df)) write.table(df[[i]], file = paste("MF/MF_", net[[i]], ".txt",sep = ""),sep="\t",quote=F)
-> 
-> 
-> list=list()
-> df=list()
-> for (net in levels(mod$Class)) {
-+ list[[net]]=mod[mod$Class == net,]
-+ df[[net]]=dogo(list[[net]]$Gene,uni,species="human", goP = 1,cond=FALSE, ontology = "CC")
-+ df[[net]]$adj=p.adjust(df[[net]]$Pvalue,"BH")
-+ df[[net]]=df[[net]][df[[net]]$Pvalue < 0.05 & df[[net]]$Count > 5,]
-+ }
-> dir.create("CC/")
-> net=levels(mod$Class)
-> for (i in 1:length(df)) write.table(df[[i]], file = paste("CC/CC_", net[[i]], ".txt",sep = ""),sep="\t",quote=F)
-> 
-> proc.time()
-   user  system elapsed 
-162.336  25.870 189.362 
+Error in df[[i]] : subscript out of bounds
+Calls: write.table -> is.data.frame
+Execution halted

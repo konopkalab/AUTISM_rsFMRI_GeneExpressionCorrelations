@@ -34,6 +34,7 @@ dogo <- function(names,universe,species="human", goP = 0.01,
 files=list.files(pattern="ASD_fMRI")
 mod=as.data.frame(lapply(files,read.table,sep="\t",header=T)[[1]])
 colnames(mod)[2] <- "Class"
+mod$Class <- as.factor(mod$Class)
 uni <- read.table("universe.txt",header=F)
 uni <- as.character(uni$V1)
 

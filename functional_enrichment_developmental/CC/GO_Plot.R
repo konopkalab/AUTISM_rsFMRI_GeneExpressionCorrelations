@@ -2,7 +2,7 @@ library(ggpubr)
 library(tidyverse)
 
 files = list.files(pattern = '*.txt')
-names <- gsub( "CC_|.txt", "", files )
+names <- gsub( "BP_|.txt", "", files )
 GeneSets = lapply(files, read.table,header=T,sep="\t")
 names(GeneSets) <- names
 #GeneSets <- GeneSets[c("WM4","WM11","WM12","WM19","WM21","WM22")]
@@ -34,14 +34,15 @@ top_labelled <- tbl_df(df) %>%
                   top_n(n = 3, wt = abs(log))
 
 
-pdf("GO_enrichment.pdf",width=3,height=5,useDingbats=FALSE)
+pdf("GO_enrichment.pdf",width=8,height=2,useDingbats=FALSE)
 ggscatter(top_labelled, x = "log", y = "OddsRatio",
    color = "Class", palette = c("royalblue", "royalblue", "royalblue"),size = 2,
    label = "Term", repel = TRUE,font.label = c(8, "plain"))+
 xlab("-log10(p-value)")+ 
 ylab("Odds Ratio") +
-facet_wrap(~Class,ncol=1,nrow=3,scales="free")+
+facet_wrap(~Class,nrow=1,ncol=3)+
 theme_classic()+
-theme(legend.position="none")
+theme(legend.position="none")+
+xlim(2,6)
 
 dev.off()
