@@ -1,25 +1,22 @@
 rm(list=ls())
-suppressPackageStartupMessages(library(ggplot2))
-suppressPackageStartupMessages(library(ggjoy))
-suppressPackageStartupMessages(library(ggrepel))
-suppressPackageStartupMessages(library(ggpubr))
-suppressPackageStartupMessages(library(cowplot))
-suppressPackageStartupMessages(library(reshape2))
-suppressPackageStartupMessages(library(data.table))
-suppressPackageStartupMessages(library(dplyr))
-suppressPackageStartupMessages(library(RColorBrewer))
-suppressPackageStartupMessages(library(cowplot))
-suppressPackageStartupMessages(library(GGally))
-suppressPackageStartupMessages(library(UpSetR))
-suppressPackageStartupMessages(library(purrr))
-suppressPackageStartupMessages(library(magrittr))
-suppressPackageStartupMessages(library(knitr))
-suppressPackageStartupMessages(library(broom))
-suppressPackageStartupMessages(library(tibble))
-suppressPackageStartupMessages(library(tidyverse))
-suppressPackageStartupMessages(library(here))
-suppressPackageStartupMessages(library(ggforce))
-suppressPackageStartupMessages(library(VennDiagram))
+suppressPackageStartupMessages({
+library(ggplot2)
+library(ggjoy)
+library(ggrepel)
+library(ggpubr)
+library(cowplot)
+library(reshape2)
+library(RColorBrewer)
+library(cowplot)
+library(GGally)
+library(UpSetR)
+library(tidyverse)
+library(here)
+library(ggforce)
+library(VennDiagram)
+library(DGCA)
+library(data.table)
+})
 
 # Create Directory
 folder_names <- c("integrative_visualizations")
@@ -111,7 +108,7 @@ load(here("integrative_results","Only_CTL_Significant.RData"))
 load(here("integrative_results","DiffCor_Significant.RData"))
 
 l <- list(Only_CTL_fALFF,Only_CTL_ReHo)
-l2 <- list(DiffCor_Sign_fALFF,DiffCor_Sign_ReHo)
+l2 <- list(DiffCor_Sign_Final)
 
 
 new_order <- c("fALFF","ReHo")
@@ -138,45 +135,13 @@ ggbarplot(tmp,
           ylim(0,5000)
 dev.off()
 
-# Venn diagram
-ven <- venn.diagram(x= list(
-fALFF = DiffCor_Sign_fALFF$Gene,
-ReHo = DiffCor_Sign_ReHo$Gene),
-filename = NULL,
-fill = c("green","magenta"),
-alpha = 0.50, 
-cex = 1, 
-fontfamily = "serif", 
-cat.cex = 1.5,
-cat.fontfamily = "serif",
-cat.dist = 0.2,
-margin = 0.2,
-lty = "dashed")
-
-pdf(file="integrative_visualizations/Venn_Diagram.pdf",width=4,height=4)
-grid.draw(ven)
-dev.off()
-
-# load data you need for visualization
-CTL_ReHo_fALFF_sign <- DiffCor_Combined %>% 
-                        filter(
-                          sign(Rho_CTL_fALFF) == sign(Rho_CTL_ReHo) & 
-                          FDR_CTL_fALFF < 0.05 & 
-                          FDR_CTL_ReHo < 0.05 &
-                          DiffCor_ReHo_P < 0.05 &
-                          DiffCor_fALFF_P < 0.05) %>% 
-                        mutate(Direction= case_when(Rho_CTL_fALFF > 0 ~ "Positive", Rho_CTL_fALFF < 0  ~ "Negative")) %>%
-                        as.data.frame()
-
-openxlsx::write.xlsx(CTL_ReHo_fALFF_sign, file = "integrative_results/DiffCor_fMRI_TableS3.xlsx", colNames = TRUE, borders = "columns",sheetName="Significant Genes")
-
 
 # File for enrichments
-df <- CTL_ReHo_fALFF_sign %>% 
+df <- DiffCor_Sign_Final %>% 
             select(Gene, Direction) %>%
             arrange(Direction)
 
-df2 <- CTL_ReHo_fALFF_sign %>% 
+df2 <- DiffCor_Sign_Final %>% 
         filter(Rsq_CTL_ReHo > 0.1 | Rsq_CTL_fALFF > 0.1)
 
 df <- data.frame(Gene = c(df$Gene,df$Gene,df2$Gene), Direction = c(df$Direction,rep("AllGene",nrow(df)),rep("TopRsq",nrow(df2))))
@@ -185,12 +150,12 @@ openxlsx::write.xlsx(df, file = "integrative_results/ASD_fMRI_Genes.xlsx", colNa
 
 ###################
 ## Scatter plot highlighting top 5 genes (pos/neg correlated)
-top_labelled <- tbl_df(CTL_ReHo_fALFF_sign) %>% 
+top_labelled <- tbl_df(DiffCor_Sign_Final) %>% 
                   group_by(Direction) %>% 
                   top_n(n = 5, wt = abs(Rho_CTL_fALFF))
 
 pdf("integrative_visualizations/Scatter_Top_Genes.pdf",width=6,height=6,useDingbats=FALSE)
-ggscatter(CTL_ReHo_fALFF_sign, 
+ggscatter(DiffCor_Sign_Final, 
             x = "Rho_CTL_ReHo", 
             y = "Rho_CTL_fALFF",
             color = "Direction",
@@ -213,7 +178,7 @@ ggscatter(CTL_ReHo_fALFF_sign,
 dev.off()
 
 ## Boxplot Rsquared
-tmpAll <- CTL_ReHo_fALFF_sign %>%
+tmpAll <- DiffCor_Sign_Final %>%
           select(Rsq_CTL_fALFF,Rsq_ASD_fALFF) %>%
           melt()
 
@@ -235,7 +200,7 @@ a <- ggboxplot(tmpAll,
         scale_x_discrete(labels= c("CTL","ASD"))
 
 
-tmpAll <- CTL_ReHo_fALFF_sign %>%
+tmpAll <- DiffCor_Sign_Final %>%
           select(Rsq_CTL_ReHo,Rsq_ASD_ReHo) %>%
           melt()
 
@@ -261,7 +226,7 @@ cowplot::save_plot("integrative_visualizations/Rsquared_Boxplot.pdf", plot2by2, 
 
 
 ## Compare correlations between ASD and CTL ##
-tmpR <- CTL_ReHo_fALFF_sign %>% 
+tmpR <- DiffCor_Sign_Final %>% 
             select(Gene,Rho_CTL_ReHo,Rho_ASD_ReHo) %>%
             melt()
 
@@ -290,7 +255,7 @@ A <- ggplot(tmpR, aes(x=value, y=variable, color=variable, point_color=variable,
       ylab("")
 
 
-tmpR <- CTL_ReHo_fALFF_sign %>% 
+tmpR <- DiffCor_Sign_Final %>% 
             select(Gene,Rho_CTL_fALFF,Rho_ASD_fALFF) %>%
             melt() 
 
@@ -323,7 +288,7 @@ cowplot::save_plot("integrative_visualizations/Density_Plot_Correlation.pdf", pl
 
 # Scatter Rsquared.
 # Highlight the genes with more than > 0.1. 
-tmp <- CTL_ReHo_fALFF_sign %>%
+tmp <- DiffCor_Sign_Final %>%
               mutate(Cool = case_when(Rsq_CTL_fALFF > 0.1 & Rsq_CTL_ReHo > 0.1 ~ "Both_High",Rsq_CTL_ReHo > 0.1 ~ "ReHo_High", Rsq_CTL_fALFF > 0.1 ~ "fALFF_High"))
 tmp[is.na(tmp)] <- "Others"
 
@@ -356,7 +321,7 @@ dev.off()
 
 ## Vulcano plot ##
 dge <- read.table(here("dge","DGE_ASDvsCTL.txt"),sep="\t",header=T) # load expression data
-dge <- dge[rownames(dge) %in% CTL_ReHo_fALFF_sign$Gene,]
+dge <- dge[rownames(dge) %in% DiffCor_Sign_Final$Gene,]
 
 tmp <- dge %>%
     rownames_to_column("Names") %>%                    
@@ -385,7 +350,7 @@ ggscatter(tmp,
 dev.off()
 
 # Upset Plot with previoys study gene set
-ctl <- data.frame(Gene = CTL_ReHo_fALFF_sign$Gene, Class = rep("CTL",nrow(CTL_ReHo_fALFF_sign)))
+ctl <- data.frame(Gene = DiffCor_Sign_Final$Gene, Class = rep("DiffCor",nrow(DiffCor_Sign_Final)))
 Neuron <- read.table("rawdata/fALFF_genes_Pearson.txt",header=T)
 Neuron <- data.frame(Gene=Neuron$fALFF_genes, Class=rep("Neuron",nrow(Neuron)))
 Rich <- read.table("rawdata/Richiardi_science.txt",header=T)
@@ -404,9 +369,28 @@ upset(fromList(l),,nsets = 6, set.metadata = list(data = metadata, plots = list(
     alpha = 0.5))))
 dev.off()
 
+ctl <- data.frame(Gene = CTL_Sign_Final$Gene, Class = rep("CTL",nrow(CTL_Sign_Final)))
+Neuron <- read.table("rawdata/fALFF_genes_Pearson.txt",header=T)
+Neuron <- data.frame(Gene=Neuron$fALFF_genes, Class=rep("Neuron",nrow(Neuron)))
+Rich <- read.table("rawdata/Richiardi_science.txt",header=T)
+
+tmpUpset <- rbind(ctl,Neuron,Rich)
+pdf("integrative_visualizations/Intersection_CTL_UpSet.pdf",width=4,height=3,useDingbats=FALSE)
+l <- split(as.character(tmpUpset$Gene),tmpUpset$Class)
+Class <- names(l)
+ToTGene <- as.numeric(sapply(l, length))
+metadata <- as.data.frame(cbind(Class, ToTGene))
+names(metadata) <- c("Class", "ToTGene")
+metadata$ToTGene <- as.numeric(as.character(metadata$ToTGene))
+upset(fromList(l),,nsets = 6, set.metadata = list(data = metadata, plots = list(list(type = "hist", 
+    column = "ToTGene", assign = 20), list(type = "matrix_rows", 
+    column = "sets", colors = c(CTL = "steelblue", Neuron = "purple", Rich = "green"), 
+    alpha = 0.5))))
+dev.off()
+
 # Coexpression
-tmpExpAsd <- p_asd[rownames(p_asd)%in%CTL_ReHo_fALFF_sign$Gene,]
-tmpExpCtl <- p_ctl[rownames(p_ctl)%in%CTL_ReHo_fALFF_sign$Gene,]
+tmpExpAsd <- p_asd[rownames(p_asd)%in%DiffCor_Sign_Final$Gene,]
+tmpExpCtl <- p_ctl[rownames(p_ctl)%in%DiffCor_Sign_Final$Gene,]
 
 coexpASD <- cor(t(tmpExpAsd),method="spearman")
 coexpCTL <- cor(t(tmpExpCtl),method="spearman")
@@ -472,7 +456,6 @@ labs(title="",x="rho", y = "Count")
 dev.off()
 
 # DGCA on TopRsq
-library(DGCA)
 genes <- read.table("integrative_results/ASD_fMRI_Genes.txt",header=T)
 genes <- genes %>% filter(Direction == "TopRsq")
 
@@ -505,7 +488,7 @@ new_names <- names(brDGE)
 pdf("integrative_visualizations/FoldChange_Heatmap.pdf", width=3, height=4)
 map(brDGE, ~ (.x %>% rownames_to_column("Gene") %>% select(Gene,logFC))) %>% 
       map2(new_names, ~setnames(.x, 'logFC', .y)) %>%
-      reduce(left_join, by = "Gene") %>% 
+      purrr::reduce(left_join, by = "Gene") %>% 
       filter(Gene %in% genes$Gene) %>% 
       column_to_rownames("Gene") %>% 
       pheatmap::pheatmap(

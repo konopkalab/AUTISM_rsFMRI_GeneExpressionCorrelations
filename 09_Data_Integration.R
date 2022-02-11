@@ -1,29 +1,9 @@
 rm(list=ls())
-suppressPackageStartupMessages(library(ggplot2))
-suppressPackageStartupMessages(library(ggjoy))
-suppressPackageStartupMessages(library(ggrepel))
-suppressPackageStartupMessages(library(ggpubr))
-suppressPackageStartupMessages(library(cowplot))
-suppressPackageStartupMessages(library(reshape2))
-suppressPackageStartupMessages(library(data.table))
-suppressPackageStartupMessages(library(dplyr))
-suppressPackageStartupMessages(library(RColorBrewer))
-suppressPackageStartupMessages(library(cowplot))
-suppressPackageStartupMessages(library(GGally))
-suppressPackageStartupMessages(library(psych))
-suppressPackageStartupMessages(library(UpSetR))
-suppressPackageStartupMessages(library(purrr))
-suppressPackageStartupMessages(library(magrittr))
-suppressPackageStartupMessages(library(knitr))
-suppressPackageStartupMessages(library(broom))
-suppressPackageStartupMessages(library(tibble))
-suppressPackageStartupMessages(library(tidyverse))
-suppressPackageStartupMessages(library(here))
-suppressPackageStartupMessages(library(ggforce))
-suppressPackageStartupMessages(library(variancePartition))
-suppressPackageStartupMessages(library(lme4))
-suppressPackageStartupMessages(library(doParallel))
-suppressPackageStartupMessages(library(VennDiagram))
+suppressPackageStartupMessages({
+library(tidyverse)
+library(here)
+library(scran)
+})
 
 # Create Output directories
 folder_names <- c("integrative_results")
@@ -42,9 +22,18 @@ DiffCor_ReHo <- DiffCor_ReHo %>%
                   mutate(Rsq_CTL_ReHo = Rho_CTL_ReHo^2,
                          Rsq_ASD_ReHo = Rho_ASD_ReHo^2)
 
-# Combine all data
-DiffCor_Combined <- Reduce(dplyr::full_join, list(DiffCor_fALFF, DiffCor_ReHo))
-openxlsx::write.xlsx(DiffCor_Combined, file = "integrative_results/DiffCor_Combined_TableS2.xlsx", colNames = TRUE, borders = "columns",sheetName="Full Table")
+# Combine all data and combine P-value
+DiffCor_Combined <- Reduce(dplyr::full_join, list(DiffCor_fALFF, DiffCor_ReHo)) %>% 
+                    mutate(Pval_CTL_Comb = combinePValues(Pval_CTL_fALFF,Pval_CTL_ReHo),
+                    	   Pval_ASD_Comb = combinePValues(Pval_ASD_fALFF,Pval_ASD_ReHo),
+                    	   DiffCor_Comb_P = combinePValues(DiffCor_fALFF_P,DiffCor_ReHo_P)) %>%
+                    mutate(FDR_CTL_Comb = p.adjust(Pval_CTL_Comb,method="BH"),
+                    	   FDR_ASD_Comb = p.adjust(Pval_ASD_Comb,method="BH")) %>%
+                    as.data.frame()
+
+openxlsx::write.xlsx(DiffCor_Combined, file = "integrative_results/DiffCor_Combined_TableS2.xlsx", 
+                    colNames = TRUE, borders = "columns",sheetName="Full Table",overwrite=TRUE)
+
 save(DiffCor_fALFF,DiffCor_ReHo,DiffCor_Combined,file = "integrative_results/DiffCor_Tables.RData")
 
 # CTL specific only
@@ -72,16 +61,26 @@ save(Only_ASD_fALFF,Only_ASD_ReHo,file = "integrative_results/Only_ASD_Significa
 
 
 # Diff Cor specific
-DiffCor_Sign_fALFF <- DiffCor_fALFF %>% 
-                        filter(FDR_CTL_fALFF < 0.05 & DiffCor_fALFF_P < 0.05) %>%
+DiffCor_Sign_Final <- DiffCor_Combined %>% 
+                        filter(FDR_CTL_Comb < 0.05 & DiffCor_Comb_P < 0.01 & sign(Rho_CTL_fALFF) == sign(Rho_CTL_ReHo)) %>% 
+                        select(-Pval_CTL_fALFF,-FDR_CTL_fALFF,-Pval_ASD_fALFF,-FDR_ASD_fALFF,
+                        	   -Pval_CTL_ReHo,-FDR_CTL_ReHo,-Pval_ASD_ReHo,-FDR_ASD_ReHo,
+                        	   -DiffCor_fALFF_P,-DiffCor_ReHo_P) %>%
+                        mutate(Direction= case_when(Rho_CTL_fALFF > 0 ~ "Positive", Rho_CTL_fALFF < 0  ~ "Negative")) %>%
                         as.data.frame()
 
-DiffCor_Sign_ReHo <- DiffCor_ReHo %>% 
-                        filter(FDR_CTL_ReHo < 0.05 & DiffCor_ReHo_P < 0.05) %>%
+CTL_Sign_Final <- DiffCor_Combined %>% 
+                        filter(FDR_CTL_Comb < 0.05 & sign(Rho_CTL_fALFF) == sign(Rho_CTL_ReHo)) %>% 
+                        select(-Pval_CTL_fALFF,-FDR_CTL_fALFF,-Pval_ASD_fALFF,-FDR_ASD_fALFF,
+                               -Pval_CTL_ReHo,-FDR_CTL_ReHo,-Pval_ASD_ReHo,-FDR_ASD_ReHo,
+                               -DiffCor_fALFF_P,-DiffCor_ReHo_P) %>%
+                        mutate(Direction= case_when(Rho_CTL_fALFF > 0 ~ "Positive", Rho_CTL_fALFF < 0  ~ "Negative")) %>%
                         as.data.frame()
 
-save(DiffCor_Sign_fALFF,DiffCor_Sign_ReHo,file = "integrative_results/DiffCor_Significant.RData")
+save(CTL_Sign_Final,DiffCor_Sign_Final,file = "integrative_results/DiffCor_Significant.RData")
 
-xlsx::write.xlsx(DiffCor_Sign_fALFF, file="integrative_results/DiffCor_Significant_TableS3.xlsx",sheetName = "fALFF",row.names=FALSE, showNA=FALSE)
-xlsx::write.xlsx(DiffCor_Sign_ReHo, file="integrative_results/DiffCor_Significant_TableS3.xlsx",sheetName = "ReHo",row.names=FALSE, showNA=FALSE,append=TRUE)
+openxlsx::write.xlsx(DiffCor_Sign_Final, file = "integrative_results/DiffCor_Significant_TableS3.xlsx", 
+                    colNames = TRUE, borders = "columns",sheetName="Full Table",overwrite=TRUE)
 
+openxlsx::write.xlsx(CTL_Sign_Final, file = "integrative_results/CTL_Significant_TableS3.xlsx", 
+                    colNames = TRUE, borders = "columns",sheetName="Full Table",overwrite=TRUE)

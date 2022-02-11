@@ -1,14 +1,15 @@
 # Covariate plot
 rm(list=ls())
-suppressPackageStartupMessages(library(reshape2))
-suppressPackageStartupMessages(library(purrr))
-suppressPackageStartupMessages(library(magrittr))
-suppressPackageStartupMessages(library(knitr))
-suppressPackageStartupMessages(library(broom))
-suppressPackageStartupMessages(library(tibble))
-suppressPackageStartupMessages(library(tidyverse))
-suppressPackageStartupMessages(library(here))
-suppressPackageStartupMessages(library(matrixStats))
+suppressPackageStartupMessages({
+library(reshape2)
+library(purrr)
+library(knitr)
+library(broom)
+library(tibble)
+library(tidyverse)
+library(here)
+library(matrixStats)
+})
 
 ###################################### 
 # Loading fALFF data and normalizing #
@@ -27,7 +28,7 @@ fALFF1 <- fALFF1 %>%
 #      filter(AGE_AT_SCAN > 18) %>%
       as.data.frame() 
 
-openxlsx::write.xlsx(fALFF1, file = "supp_tables/fALFF1_ABIDE_Values.xlsx", colNames = TRUE, borders = "columns")
+openxlsx::write.xlsx(fALFF1, file = "supp_tables/fALFF1_ABIDE_Values.xlsx", colNames = TRUE, borders = "columns",overwrite=TRUE)
 
 # Mutate columns as factor
 cols <- c("ID","Diagnosis","Sex","ABIDE","SITE")
@@ -80,7 +81,7 @@ ReHo1 <- ReHo1 %>%
       select(ID, everything()) %>%
 #      filter(AGE_AT_SCAN > 18) %>%
       as.data.frame() 
-openxlsx::write.xlsx(ReHo1, file = "supp_tables/ReHo1_ABIDE_Values.xlsx", colNames = TRUE, borders = "columns")
+openxlsx::write.xlsx(ReHo1, file = "supp_tables/ReHo1_ABIDE_Values.xlsx", colNames = TRUE, borders = "columns",overwrite=TRUE)
 
 # Mutate columns as factor
 cols <- c("ID","Diagnosis","Sex","ABIDE","SITE")

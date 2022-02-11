@@ -1,24 +1,17 @@
 # Libraries and codes
-suppressPackageStartupMessages(library(ggplot2))
-suppressPackageStartupMessages(library(reshape2))
-suppressPackageStartupMessages(library(pheatmap))
-suppressPackageStartupMessages(library(ggpubr))
-suppressPackageStartupMessages(library(cowplot))
-suppressPackageStartupMessages(library(ggrepel))
-suppressPackageStartupMessages(library(preprocessCore))
-suppressPackageStartupMessages(library(dplyr))
-suppressPackageStartupMessages(library(cowplot))
-suppressPackageStartupMessages(library(xlsx))
-suppressPackageStartupMessages(library(made4))
-suppressPackageStartupMessages(library(corrplot))
-suppressPackageStartupMessages(library(tibble))
-suppressPackageStartupMessages(library(magrittr))
-suppressPackageStartupMessages(library(tidyverse))
-suppressPackageStartupMessages(library(purrr))
-suppressPackageStartupMessages(library(openxlsx))
-suppressPackageStartupMessages(library(psych))
-suppressPackageStartupMessages(library(here))
-suppressPackageStartupMessages(library(matrixStats))
+suppressPackageStartupMessages({
+library(reshape2)
+library(purrr)
+library(knitr)
+library(broom)
+library(tibble)
+library(tidyverse)
+library(here)
+library(matrixStats)
+library(preprocessCore)
+library(openxlsx)
+library(psych)
+})
 source("UTILS/Utils.R")
 
 # Create Directory
@@ -109,16 +102,18 @@ for (i in 1:B)
 
 #### Combine the data
 CTL_fALFF <- resCTL_PanCort %>% 
-              bind_cols() %>%
+              purrr::reduce(full_join,by = "Gene") %>%
               #filter_at(vars(starts_with("Pval")), all_vars(. < 0.05)) %>%
               #filter_at(vars(starts_with("Rho")), all_vars(. < 0 | . > 0)) %>%
-              mutate(Rho_CTL_fALFF = rowMeans(select(., starts_with("Rho")), na.rm = TRUE), Pval_CTL_fALFF = rowMeans(select(., starts_with("Pval")), na.rm = TRUE)) %>%
+              mutate(Rho_CTL_fALFF = rowMeans(select(., starts_with("Rho")), na.rm = TRUE), 
+                     Pval_CTL_fALFF = rowMeans(select(., starts_with("Pval")), na.rm = TRUE)) %>%
               mutate(FDR_CTL_fALFF = p.adjust(Pval_CTL_fALFF,method="BH")) %>%
               select("Gene","Rho_CTL_fALFF","Pval_CTL_fALFF","FDR_CTL_fALFF")
 
 ASD_fALFF <- resASD_PanCort %>% 
-              bind_cols() %>%
-              mutate(Rho_ASD_fALFF = rowMeans(select(., starts_with("Rho")), na.rm = TRUE), Pval_ASD_fALFF = rowMeans(select(., starts_with("Pval")), na.rm = TRUE)) %>%
+              purrr::reduce(full_join,by = "Gene") %>%
+              mutate(Rho_ASD_fALFF = rowMeans(select(., starts_with("Rho")), na.rm = TRUE), 
+                     Pval_ASD_fALFF = rowMeans(select(., starts_with("Pval")), na.rm = TRUE)) %>%
               mutate(FDR_ASD_fALFF = p.adjust(Pval_ASD_fALFF,method="BH")) %>%
               select("Gene","Rho_ASD_fALFF","Pval_ASD_fALFF","FDR_ASD_fALFF")
 
@@ -131,16 +126,18 @@ save(CTL_fALFF,ASD_fALFF,DiffCor_fALFF, file="Permuted_Matches_Outputs/Permuted_
 
 #### Combine the data with specific filtering
 CTL_fALFF <- resCTL_PanCort %>% 
-              bind_cols() %>%
+              purrr::reduce(full_join,by = "Gene") %>%
               filter_at(vars(starts_with("Pval")), all_vars(. < 0.05)) %>%
               filter_at(vars(starts_with("Rho")), all_vars(. < 0 | . > 0)) %>%
-              mutate(Rho_CTL_fALFF = rowMeans(select(., starts_with("Rho")), na.rm = TRUE), Pval_CTL_fALFF = rowMeans(select(., starts_with("Pval")), na.rm = TRUE)) %>%
+              mutate(Rho_CTL_fALFF = rowMeans(select(., starts_with("Rho")), na.rm = TRUE), 
+                     Pval_CTL_fALFF = rowMeans(select(., starts_with("Pval")), na.rm = TRUE)) %>%
               mutate(FDR_CTL_fALFF = p.adjust(Pval_CTL_fALFF,method="BH")) %>%
               select("Gene","Rho_CTL_fALFF","Pval_CTL_fALFF","FDR_CTL_fALFF")
 
 ASD_fALFF <- resASD_PanCort %>% 
-              bind_cols() %>%
-              mutate(Rho_ASD_fALFF = rowMeans(select(., starts_with("Rho")), na.rm = TRUE), Pval_ASD_fALFF = rowMeans(select(., starts_with("Pval")), na.rm = TRUE)) %>%
+              purrr::reduce(full_join,by = "Gene") %>%
+              mutate(Rho_ASD_fALFF = rowMeans(select(., starts_with("Rho")), na.rm = TRUE), 
+                     Pval_ASD_fALFF = rowMeans(select(., starts_with("Pval")), na.rm = TRUE)) %>%
               mutate(FDR_ASD_fALFF = p.adjust(Pval_ASD_fALFF,method="BH")) %>%
               select("Gene","Rho_ASD_fALFF","Pval_ASD_fALFF","FDR_ASD_fALFF")
 

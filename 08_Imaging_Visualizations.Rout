@@ -1,0 +1,607 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-apple-darwin17.0 (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> rm(list=ls())
+> suppressPackageStartupMessages({
++ library(ggplot2)
++ library(ggjoy)
++ library(ggrepel)
++ library(ggpubr)
++ library(reshape2)
++ library(data.table)
++ library(RColorBrewer)
++ library(cowplot)
++ library(GGally)
++ library(ggforce)
++ library(VennDiagram)
++ library(ggstatsplot)
++ library(broom)
++ library(tidyverse)
++ library(here)
++ library(effsize)
++ })
+Found more than one class "atomicVector" in cache; using the first, from namespace 'Matrix'
+Also defined by ‘Rmpfr’
+Found more than one class "atomicVector" in cache; using the first, from namespace 'Matrix'
+Also defined by ‘Rmpfr’
+Found more than one class "atomicVector" in cache; using the first, from namespace 'Matrix'
+Also defined by ‘Rmpfr’
+Found more than one class "atomicVector" in cache; using the first, from namespace 'Matrix'
+Also defined by ‘Rmpfr’
+Found more than one class "atomicVector" in cache; using the first, from namespace 'Matrix'
+Also defined by ‘Rmpfr’
+Found more than one class "atomicVector" in cache; using the first, from namespace 'Matrix'
+Also defined by ‘Rmpfr’
+Found more than one class "atomicVector" in cache; using the first, from namespace 'Matrix'
+Also defined by ‘Rmpfr’
+Found more than one class "atomicVector" in cache; using the first, from namespace 'Matrix'
+Also defined by ‘Rmpfr’
+Found more than one class "atomicVector" in cache; using the first, from namespace 'Matrix'
+Also defined by ‘Rmpfr’
+Found more than one class "atomicVector" in cache; using the first, from namespace 'Matrix'
+Also defined by ‘Rmpfr’
+Found more than one class "atomicVector" in cache; using the first, from namespace 'Matrix'
+Also defined by ‘Rmpfr’
+Found more than one class "atomicVector" in cache; using the first, from namespace 'Matrix'
+Also defined by ‘Rmpfr’
+> 
+> # Create Directory
+> folder_names <- c("imaging_visualizations")
+> sapply(folder_names, dir.create)
+imaging_visualizations 
+                 FALSE 
+Warning message:
+In FUN(X[[i]], ...) : 'imaging_visualizations' already exists
+> 
+> # PCA plot
+> fALFF1 <- read.table(here("rawdata","ABIDEIandIIChosenScansBrodmannValues_equalized_global_fALFF.csv"),sep=",",header=T)
+> colnames(fALFF1) <- gsub("MeanRegion","BA",colnames(fALFF1))
+> 
+> fALFF1 <- fALFF1 %>% 
++       mutate(Diagnosis = case_when(DX == 1 ~ "ASD", DX == 2 ~ "CTL"),
++              Sex = case_when(SEX == 2 ~ "F", SEX == 1 ~ "M")) %>%
++       select(-DX, -SEX) %>%
++       select(Sex, everything()) %>%
++       select(Diagnosis, everything()) %>%
++       select(ID, everything()) %>%
++       as.data.frame() 
+> 
+> PCA <- prcomp(fALFF1[,grep("BA",colnames(fALFF1))])
+> 
+> pdf("imaging_visualizations/PCA_fALFF_ScreePlot.pdf",width=6,height=4)
+> factoextra::fviz_eig(PCA,ncp = 25)
+> dev.off()
+null device 
+          1 
+> 
+> PCi<-data.frame(PCA$x,Diagnosis=fALFF1$Diagnosis)
+> eig <- (PCA$sdev)^2
+> variance <- eig*100/sum(eig)
+> 
+> pdf("imaging_visualizations/PCA_fALFF.pdf",width=5,height=4)
+> ggscatter(PCi, x = "PC1", y = "PC2",color = "Diagnosis",palette=c("red","black"), shape = 21, size = 1)+
++ xlab(paste("PC1 (",round(variance[1],1),"% )"))+ 
++ ylab(paste("PC2 (",round(variance[2],1),"% )"))+
++ theme_classic()
+> dev.off()
+null device 
+          1 
+> 
+> ReHo1 <- read.table(here("rawdata","ABIDEIandIIChosenScansBrodmannValues_equalized_global_ReHo.csv"),sep=",",header=T)
+> colnames(ReHo1) <- gsub("MeanRegion","BA",colnames(ReHo1))
+> 
+> ReHo1 <- ReHo1 %>% 
++       mutate(Diagnosis = case_when(DX == 1 ~ "ASD", DX == 2 ~ "CTL"),
++              Sex = case_when(SEX == 2 ~ "F", SEX == 1 ~ "M")) %>%
++       select(-DX, -SEX) %>%
++       select(Sex, everything()) %>%
++       select(Diagnosis, everything()) %>%
++       select(ID, everything()) %>%
++       as.data.frame() 
+> 
+> PCA <- prcomp(ReHo1[,grep("BA",colnames(ReHo1))])
+> 
+> pdf("imaging_visualizations/PCA_ReHo_ScreePlot.pdf",width=6,height=4)
+> factoextra::fviz_eig(PCA,ncp = 25)
+> dev.off()
+null device 
+          1 
+> 
+> PCi<-data.frame(PCA$x,Diagnosis=ReHo1$Diagnosis)
+> eig <- (PCA$sdev)^2
+> variance <- eig*100/sum(eig)
+> 
+> pdf("imaging_visualizations/PCA_ReHo.pdf",width=5,height=4)
+> ggscatter(PCi, x = "PC1", y = "PC2",color = "Diagnosis",palette=c("red","black"), shape = 21, size = 1)+
++ xlab(paste("PC1 (",round(variance[1],1),"% )"))+ 
++ ylab(paste("PC2 (",round(variance[2],1),"% )"))+
++ theme_classic()
+> dev.off()
+null device 
+          1 
+> 
+> 
+> # Viz of the ABIDE values with ASD
+> load(here("rawdata","Imaging_with_ASD_Normalized.RData"))
+> #Imaging_ASD$Region <- factor(Imaging_ASD$Region,levels = c("BA9","BA44_45","BA24","BA38","BA20_37","BA4_6","BA3_1_2_5","BA39_40","BA41_42_22","BA7","BA17"))
+> 
+> # Cohen's d calcualtion
+> tmpCast <- split(Imaging_ASD,Imaging_ASD$Region)
+> cohenF <- tmpCast %>% 
++         purrr::map(~ cohen.d(.x$fALFF1,.x$Diagnosis)$estimate) %>%
++         purrr::map_df(tidy) %>%
++         mutate(Region = names(tmpCast)) %>%
++         as.data.frame() %>%
++         dplyr::rename(fALFF = x)
+There were 12 warnings (use warnings() to see them)
+>         
+> openxlsx::write.xlsx(cohenF, file = "imaging_visualizations/CohenF_fALFF_Stats.xlsx", colNames = TRUE, borders = "columns",overwrite=TRUE)
+> 
+> cohenR <- tmpCast %>% 
++         map(~ cohen.d(.x$ReHo1,.x$Diagnosis)$estimate) %>%
++         map_df(tidy) %>%
++         mutate(Region = names(tmpCast)) %>%
++         dplyr::rename(ReHo = x) %>%
++         as.data.frame()
+There were 11 warnings (use warnings() to see them)
+> openxlsx::write.xlsx(cohenR, file = "imaging_visualizations/CohenF_ReHo_Stats.xlsx", colNames = TRUE, borders = "columns",overwrite=TRUE)
+> 
+> pdf(file="imaging_visualizations/Imaging_CoehnsD.pdf",width=6,height=3)
+> full_join(cohenF,cohenR) %>%
++     melt() %>%
++     ggplot(aes(Region, variable, fill= value)) + 
++         geom_tile()+
++         scale_fill_gradientn(colours=c('red','white','blue'), limits=c(-1,1)) +
++         geom_text(aes(Region, variable, label = round(value,digits=2)), color = "black", size = 3)+
++           theme_classic()+
++           rotate_x_text(angle = 45)+
++           xlab("")+
++           ylab("")+ 
++           labs(fill = "Cohen's d")
+Joining, by = "Region"
+Using Region as id variables
+Warning message:
+In melt(.) :
+  The melt generic in data.table has been passed a data.frame and will attempt to redirect to the relevant reshape2 method; please note that reshape2 is deprecated, and this redirection is now deprecated as well. To continue using melt methods from reshape2 while both libraries are attached, e.g. melt.list, you can prepend the namespace like reshape2::melt(.). In the next version, this warning will become an error.
+> dev.off()
+null device 
+          1 
+> 
+> # Boxplotting
+> pdf(file="imaging_visualizations/Imaging_boxplot_fALFF_Simplified.pdf",width=8,height=4)
+> tmpMelted <- Imaging_ASD %>% melt() %>% filter(variable == "fALFF1") %>% arrange(Region)
+Using NewID, ID, Diagnosis, Region as id variables
+Warning message:
+In melt(.) :
+  The melt generic in data.table has been passed a data.frame and will attempt to redirect to the relevant reshape2 method; please note that reshape2 is deprecated, and this redirection is now deprecated as well. To continue using melt methods from reshape2 while both libraries are attached, e.g. melt.list, you can prepend the namespace like reshape2::melt(.). In the next version, this warning will become an error.
+> ggboxplot(tmpMelted, 
++           x = "Region", 
++           y = "value",
++           color = "Diagnosis", 
++           palette = c("red","black"), 
++           short.panel.labs = FALSE)+
++           #facet_wrap(~Region,ncol=4,nrow=3,scales="free")+
++   stat_compare_means(aes(group = Diagnosis),label = "p.signif",hide.ns = TRUE)+
++ theme_classic()+
++ theme(legend.position="none")+
++ rotate_x_text(angle = 45)+
++ xlab("")+
++ ylab("fALFF")
+> dev.off()
+null device 
+          1 
+> 
+> Stats <- compare_means(value ~ Diagnosis, tmpMelted, group.by = "Region",method="t.test") %>% as.data.frame()
+> openxlsx::write.xlsx(Stats, file = "imaging_visualizations/Imaging_boxplot_fALFF_Stats.xlsx", colNames = TRUE, borders = "columns",overwrite=TRUE)
+> 
+> pdf(file="imaging_visualizations/Imaging_boxplot_ReHo_Simplified.pdf",width=8,height=4)
+> tmpMelted <- Imaging_ASD %>% melt() %>% filter(variable == "ReHo1") %>% arrange(Region)
+Using NewID, ID, Diagnosis, Region as id variables
+Warning message:
+In melt(.) :
+  The melt generic in data.table has been passed a data.frame and will attempt to redirect to the relevant reshape2 method; please note that reshape2 is deprecated, and this redirection is now deprecated as well. To continue using melt methods from reshape2 while both libraries are attached, e.g. melt.list, you can prepend the namespace like reshape2::melt(.). In the next version, this warning will become an error.
+> ggboxplot(tmpMelted, 
++           x = "Region", 
++           y = "value",
++           color = "Diagnosis", 
++           palette = c("red","black"), 
++           short.panel.labs = FALSE)+
++           #facet_wrap(~Region,ncol=4,nrow=3,scales="free")+
++   stat_compare_means(aes(group = Diagnosis),label = "p.signif", hide.ns = TRUE)+
++ theme_classic()+
++ theme(legend.position="none")+
++ rotate_x_text(angle = 45)+
++ xlab("")+
++ ylab("ReHo")
+> dev.off()
+null device 
+          1 
+> 
+> Stats <- compare_means(value ~ Diagnosis, tmpMelted, group.by = "Region",method="t.test") %>% as.data.frame()
+> openxlsx::write.xlsx(Stats, file = "imaging_visualizations/Imaging_boxplot_ReHo_Stats.xlsx", colNames = TRUE, borders = "columns",overwrite=TRUE)
+> 
+> 
+> # Working on CTL only
+> load(here("rawdata","Imaging_Normalized.RData"))
+> 
+> # Set up colors for each region
+> paired <- c("#A6CEE3","#1F78B4","#B2DF8A","#33A02C","#FB9A99","#E31A1C","#FDBF6F", "#FF7F00","#CAB2D6","#6A3D9A","#FF99F8")
+> 
+> pdf(file="imaging_visualizations/Imaging_ScatterCor.pdf",width=7,height=6)
+> ggscatter(Imaging, 
++           x = "fALFF1", 
++           y = "ReHo1",
++           add = "reg.line",                         # Add regression line
++           color = "Region",
++           palette=paired,            # Color by groups "cyl"
++           fullrange = FALSE,                         # Extending the regression line
++           rug = FALSE,
++           ellipse = TRUE,size = 1                                 # Add marginal rug
++           )+
++   stat_cor(aes(color = Region)) +
++   theme(legend.position="right")
+`geom_smooth()` using formula 'y ~ x'
+> dev.off()
+null device 
+          1 
+> 
+> svg("imaging_visualizations/Imaging_ScatterCor.svg")
+> ggscatter(Imaging, 
++           x = "fALFF1", 
++           y = "ReHo1",
++           add = "reg.line",                         # Add regression line
++           color = "Region",
++           palette=paired,            # Color by groups "cyl"
++           fullrange = FALSE,                         # Extending the regression line
++           rug = FALSE,
++           ellipse = TRUE,size = 1                                 # Add marginal rug
++           )+
++   stat_cor(aes(color = Region)) +
++   theme(legend.position="right")
+`geom_smooth()` using formula 'y ~ x'
+> dev.off()
+null device 
+          1 
+> 
+> 
+> pdf(file="imaging_visualizations/Imaging_ScatterCor_PanCort.pdf",width=6,height=6)
+> ggscatter(Imaging, x = "fALFF1", y = "ReHo1",
++    color = "Region", size = 1, 
++    add = "reg.line", palette=paired, 
++    add.params = list(color = "red", fill = "lightgray"), 
++    conf.int = TRUE, 
++    cor.coef = TRUE, 
++    cor.coeff.args = list(method = "pearson", label.sep = "\n"),
++    ellipse = TRUE)+
++   theme(legend.position="right")
+`geom_smooth()` using formula 'y ~ x'
+> dev.off()
+null device 
+          1 
+> 
+> # PCA plots
+> pdf(file="imaging_visualizations/PCA_fALFF.pdf",width=5,height=5)
+> falff <- dcast(Imaging,ID ~ Region,value.var = "fALFF1")
+Warning message:
+In dcast(Imaging, ID ~ Region, value.var = "fALFF1") :
+  The dcast generic in data.table has been passed a data.frame and will attempt to redirect to the reshape2::dcast; please note that reshape2 is deprecated, and this redirection is now deprecated as well. Please do this redirection yourself like reshape2::dcast(Imaging). In the next version, this warning will become an error.
+> falff$ID <- NULL
+> PC<-prcomp(t(falff))
+> eig <- (PC$sdev)^2
+> variance <- eig*100/sum(eig)
+> PCi<-data.frame(PC$x[,1:3],Class = rownames(PC$x))
+> ggscatter(PCi, x = "PC1", y = "PC2",color = "Class",
++ palette = paired,
++ ellipse = FALSE, mean.point = FALSE,star.plot = FALSE,rug = FALSE,label="Class")+
++ xlab(paste("PC1 (",round(variance[1],1),"% )"))+ 
++ ylab(paste("PC2 (",round(variance[2],1),"% )")) +
++ theme(legend.position="none")+
++ border(color = "green")
+> dev.off()
+null device 
+          1 
+> 
+> 
+> pdf(file="imaging_visualizations/PCA_ReHo.pdf",width=5,height=5)
+> reho <- dcast(Imaging,ID ~ Region,value.var = "ReHo1")
+Warning message:
+In dcast(Imaging, ID ~ Region, value.var = "ReHo1") :
+  The dcast generic in data.table has been passed a data.frame and will attempt to redirect to the reshape2::dcast; please note that reshape2 is deprecated, and this redirection is now deprecated as well. Please do this redirection yourself like reshape2::dcast(Imaging). In the next version, this warning will become an error.
+> reho$ID <- NULL
+> PC<-prcomp(t(reho))
+> eig <- (PC$sdev)^2
+> variance <- eig*100/sum(eig)
+> PCi<-data.frame(PC$x[,1:3],Class = rownames(PC$x))
+> ggscatter(PCi, x = "PC1", y = "PC2",color = "Class",
++ palette = paired,
++ ellipse = FALSE, mean.point = FALSE,star.plot = FALSE,rug = FALSE,label="Class")+
++ xlab(paste("PC1 (",round(variance[1],1),"% )"))+ 
++ ylab(paste("PC2 (",round(variance[2],1),"% )")) +
++ theme(legend.position="none")+
++ border(color = "magenta")
+> dev.off()
+null device 
+          1 
+> 
+> # crosscorr plots
+> my_fn <- function(data, mapping, ...){
++   p <- ggplot(data = data, mapping = mapping) + 
++     geom_point() + 
++     geom_smooth(method=lm, fill="blue", color="blue", ...)
++   p
++ }
+> 
+> 
+> pdf(file="imaging_visualizations/CrossCorr_fALFF.pdf",width=8,height=8)
+> ggpairs(falff, lower = list(continuous = my_fn))
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+> dev.off()
+null device 
+          1 
+> 
+> pdf(file="imaging_visualizations/CrossCorr_ReHo.pdf",width=8,height=8)
+> ggpairs(reho, lower = list(continuous = my_fn))
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+`geom_smooth()` using formula 'y ~ x'
+> dev.off()
+null device 
+          1 
+> 
+> pdf(file="imaging_visualizations/CrossCorr_fALFF_2.pdf",width=5,height=5)
+> ggcorr(falff, palette = "RdBu", label = TRUE)
+> dev.off()
+null device 
+          1 
+> 
+> pdf(file="imaging_visualizations/CrossCorr_ReHo_2.pdf",width=5,height=5)
+> ggcorr(reho, palette = "RdBu", label = TRUE)
+> dev.off()
+null device 
+          1 
+> 
+> 
+> ########################### 
+> ### Distribution values ###
+> ###########################
+> a <- ggboxplot(Imaging, 
++           x = "Region", 
++           y = "fALFF1",
++           color = "Region", 
++           palette = paired, 
++           short.panel.labs = FALSE)+
++     theme_classic()+
++     theme(legend.position="none")+
++     rotate_x_text(angle = 45)+
++     xlab("")+
++     ylab("fALFF")
+> 
+> b <- ggboxplot(Imaging, 
++           x = "Region", 
++           y = "ReHo1",
++           color = "Region", 
++           palette = paired, 
++           short.panel.labs = FALSE)+
++     theme_classic()+
++     theme(legend.position="none")+
++     rotate_x_text(angle = 45)+
++     xlab("")+
++     ylab("ReHo")
+> 
+> plot <- plot_grid(a,b,labels=c("A", "B"), ncol = 1,nrow=2)
+> save_plot("imaging_visualizations/Distribution_Imaging_Values.pdf", plot, ncol = 1,base_height=6,base_width=5)
+> 
+> sessionInfo()
+R version 4.0.3 (2020-10-10)
+Platform: x86_64-apple-darwin17.0 (64-bit)
+Running under: macOS Mojave 10.14.5
+
+Matrix products: default
+BLAS:   /Library/Frameworks/R.framework/Versions/4.0/Resources/lib/libRblas.dylib
+LAPACK: /Library/Frameworks/R.framework/Versions/4.0/Resources/lib/libRlapack.dylib
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+attached base packages:
+[1] grid      stats     graphics  grDevices utils     datasets  methods  
+[8] base     
+
+other attached packages:
+ [1] effsize_0.8.1        here_1.0.1           forcats_0.5.1       
+ [4] stringr_1.4.0        dplyr_1.0.7          purrr_0.3.4         
+ [7] readr_2.0.1          tidyr_1.1.3          tibble_3.1.3        
+[10] tidyverse_1.3.0.9000 broom_0.7.9          ggstatsplot_0.8.0   
+[13] VennDiagram_1.6.20   futile.logger_1.4.3  ggforce_0.3.3       
+[16] GGally_2.0.0         cowplot_1.1.1        RColorBrewer_1.1-2  
+[19] data.table_1.14.0    reshape2_1.4.4       ggpubr_0.4.0.999    
+[22] ggrepel_0.9.1        ggjoy_0.4.1          ggridges_0.5.2      
+[25] ggplot2_3.3.5       
+
+loaded via a namespace (and not attached):
+  [1] readxl_1.3.1              pairwiseComparisons_3.1.6
+  [3] backports_1.2.1           systemfonts_0.3.2        
+  [5] plyr_1.8.6                splines_4.0.3            
+  [7] gmp_0.6-2                 kSamples_1.2-9           
+  [9] ipmisc_6.0.2              TH.data_1.0-10           
+ [11] digest_0.6.27             SuppDists_1.1-9.5        
+ [13] fansi_0.5.0               magrittr_2.0.1           
+ [15] memoise_2.0.0             paletteer_1.4.0          
+ [17] tzdb_0.1.2                openxlsx_4.2.4.9000      
+ [19] modelr_0.1.8              sandwich_3.0-0           
+ [21] colorspace_2.0-2          rvest_0.3.6              
+ [23] textshaping_0.2.1         haven_2.3.1              
+ [25] crayon_1.4.1              jsonlite_1.7.2           
+ [27] zeallot_0.1.0             survival_3.2-7           
+ [29] zoo_1.8-9                 glue_1.4.2               
+ [31] polyclip_1.10-0           gtable_0.3.0             
+ [33] emmeans_1.6.2-1           MatrixModels_0.4-1       
+ [35] statsExpressions_1.1.0    car_3.0-10               
+ [37] Rmpfr_0.8-4               abind_1.4-5              
+ [39] scales_1.1.1              futile.options_1.0.1     
+ [41] mvtnorm_1.1-2             DBI_1.1.1                
+ [43] rstatix_0.6.0             PMCMRplus_1.9.0          
+ [45] Rcpp_1.0.7                xtable_1.8-4             
+ [47] performance_0.7.3         foreign_0.8-81           
+ [49] datawizard_0.2.0.1        httr_1.4.2               
+ [51] ellipsis_0.3.2            factoextra_1.0.7         
+ [53] pkgconfig_2.0.3           reshape_0.8.8            
+ [55] farver_2.1.0              multcompView_0.1-8       
+ [57] dbplyr_2.1.1              utf8_1.2.2               
+ [59] tidyselect_1.1.1          labeling_0.4.2           
+ [61] rlang_0.4.11              effectsize_0.4.5         
+ [63] munsell_0.5.0             cellranger_1.1.0         
+ [65] tools_4.0.3               cachem_1.0.5             
+ [67] cli_3.0.1                 generics_0.1.0           
+ [69] fastmap_1.1.0             BWStest_0.2.2            
+ [71] ragg_0.4.0                rematch2_2.1.2           
+ [73] fs_1.5.0                  zip_2.2.0                
+ [75] WRS2_1.1-3                pbapply_1.4-3            
+ [77] nlme_3.1-151              formatR_1.11             
+ [79] xml2_1.3.2                correlation_0.7.0        
+ [81] compiler_4.0.3            rstudioapi_0.13          
+ [83] curl_4.3.2                ggsignif_0.6.0           
+ [85] reprex_0.3.0              tweenr_1.0.2             
+ [87] stringi_1.7.3             parameters_0.14.0        
+ [89] lattice_0.20-41           Matrix_1.3-0             
+ [91] vctrs_0.3.8               pillar_1.6.2             
+ [93] lifecycle_1.0.0           mc2d_0.1-21              
+ [95] estimability_1.3          insight_0.14.4           
+ [97] patchwork_1.1.1           R6_2.5.0                 
+ [99] rio_0.5.16                BayesFactor_0.9.12-4.2   
+[101] codetools_0.2-18          lambda.r_1.2.4           
+[103] MASS_7.3-53               gtools_3.9.2             
+[105] assertthat_0.2.1          rprojroot_2.0.2          
+[107] withr_2.4.2               multcomp_1.4-15          
+[109] mgcv_1.8-33               bayestestR_0.11.0        
+[111] parallel_4.0.3            hms_1.1.0                
+[113] coda_0.19-4               carData_3.0-4            
+[115] lubridate_1.7.10         
+> 
+> 
+> 
+> proc.time()
+   user  system elapsed 
+ 26.784   0.661  28.375 

@@ -1,11 +1,13 @@
 rm(list=ls())
-suppressPackageStartupMessages(library(here))
-suppressPackageStartupMessages(library(factoextra))
-suppressPackageStartupMessages(library(ade4))
-suppressPackageStartupMessages(library(tidyverse))
-suppressPackageStartupMessages(library(data.table))
-suppressPackageStartupMessages(library(FactoMineR))
-suppressPackageStartupMessages(library(ggpubr))
+suppressPackageStartupMessages({
+library(here)
+library(factoextra)
+library(ade4)
+library(tidyverse)
+library(data.table)
+library(FactoMineR)
+library(ggpubr)
+})
 
 load(here("Permuted_Matches_LoRo_Outputs", "Permuted_Matches_LoRo_fALFF.RData"))
 genes <- read.table(here("integrative_results","ASD_fMRI_Genes.txt"),header=T,sep="\t")
@@ -43,8 +45,7 @@ map(DiffCor_fALFF_LoRo, ~ (.x %>% select(Gene,DiffCor_fALFF_Z))) %>%
       map2(new_names, ~setnames(.x, 'DiffCor_fALFF_Z', .y)) %>%
       reduce(left_join, by = "Gene") %>% 
       filter(Gene %in% genes$Gene) %>% 
-      column_to_rownames("Gene") %>%
-      openxlsx::write.xlsx(file = "supp_tables/DiffCor_fALFF_LoRo_Values.xlsx", colNames = TRUE, borders = "columns")
+      openxlsx::write.xlsx(file = "supp_tables/DiffCor_fALFF_LoRo_Values.xlsx", colNames = TRUE, borders = "columns",overwrite=TRUE)
 
 pdf("integrative_visualizations/Boxplot_LoR_Contribution_fALFF.pdf", width=5, height=3)
  map(DiffCor_fALFF_LoRo, ~ (.x %>% select(Gene,DiffCor_fALFF_Z))) %>% 
@@ -155,8 +156,7 @@ map(DiffCor_ReHo_LoRo, ~ (.x %>% select(Gene,DiffCor_ReHo_Z))) %>%
       map2(new_names, ~setnames(.x, 'DiffCor_ReHo_Z', .y)) %>%
       reduce(left_join, by = "Gene") %>% 
       filter(Gene %in% genes$Gene) %>% 
-      column_to_rownames("Gene") %>%
-      openxlsx::write.xlsx(file = "supp_tables/DiffCor_ReHo_LoRo_Values.xlsx", colNames = TRUE, borders = "columns")
+      openxlsx::write.xlsx(file = "supp_tables/DiffCor_ReHo_LoRo_Values.xlsx", colNames = TRUE, borders = "columns",overwrite=TRUE)
 
 paired <- c("#A6CEE3","#1F78B4","#B2DF8A","#33A02C","#FB9A99","#E31A1C","#FDBF6F", "#FF7F00","#CAB2D6","#6A3D9A","#FF99F8")
 

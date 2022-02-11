@@ -1,26 +1,22 @@
 rm(list=ls())
-suppressPackageStartupMessages(library(ggplot2))
-suppressPackageStartupMessages(library(ggjoy))
-suppressPackageStartupMessages(library(ggrepel))
-suppressPackageStartupMessages(library(ggpubr))
-suppressPackageStartupMessages(library(cowplot))
-suppressPackageStartupMessages(library(reshape2))
-suppressPackageStartupMessages(library(data.table))
-suppressPackageStartupMessages(library(dplyr))
-suppressPackageStartupMessages(library(RColorBrewer))
-suppressPackageStartupMessages(library(cowplot))
-suppressPackageStartupMessages(library(GGally))
-suppressPackageStartupMessages(library(purrr))
-suppressPackageStartupMessages(library(magrittr))
-suppressPackageStartupMessages(library(knitr))
-suppressPackageStartupMessages(library(broom))
-suppressPackageStartupMessages(library(tibble))
-suppressPackageStartupMessages(library(tidyverse))
-suppressPackageStartupMessages(library(here))
-suppressPackageStartupMessages(library(ggforce))
-suppressPackageStartupMessages(library(VennDiagram))
-suppressPackageStartupMessages(library(ggstatsplot))
-suppressPackageStartupMessages(library(effsize))
+suppressPackageStartupMessages({
+library(ggplot2)
+library(ggjoy)
+library(ggrepel)
+library(ggpubr)
+library(reshape2)
+library(data.table)
+library(RColorBrewer)
+library(cowplot)
+library(GGally)
+library(ggforce)
+library(VennDiagram)
+library(ggstatsplot)
+library(broom)
+library(tidyverse)
+library(here)
+library(effsize)
+})
 
 # Create Directory
 folder_names <- c("imaging_visualizations")
@@ -93,20 +89,21 @@ load(here("rawdata","Imaging_with_ASD_Normalized.RData"))
 # Cohen's d calcualtion
 tmpCast <- split(Imaging_ASD,Imaging_ASD$Region)
 cohenF <- tmpCast %>% 
-        map(~ cohen.d(.x$fALFF1, .x$Diagnosis)$estimate) %>%
-        map_df(tidy) %>%
+        purrr::map(~ cohen.d(.x$fALFF1,.x$Diagnosis)$estimate) %>%
+        purrr::map_df(tidy) %>%
         mutate(Region = names(tmpCast)) %>%
-        rename(fALFF = x) %>%
-        as.data.frame()
-openxlsx::write.xlsx(cohenF, file = "imaging_visualizations/CohenF_fALFF_Stats.xlsx", colNames = TRUE, borders = "columns")
+        as.data.frame() %>%
+        dplyr::rename(fALFF = x)
+        
+openxlsx::write.xlsx(cohenF, file = "imaging_visualizations/CohenF_fALFF_Stats.xlsx", colNames = TRUE, borders = "columns",overwrite=TRUE)
 
 cohenR <- tmpCast %>% 
-        map(~ cohen.d(.x$ReHo1, .x$Diagnosis)$estimate) %>%
+        map(~ cohen.d(.x$ReHo1,.x$Diagnosis)$estimate) %>%
         map_df(tidy) %>%
         mutate(Region = names(tmpCast)) %>%
-        rename(ReHo = x) %>%
+        dplyr::rename(ReHo = x) %>%
         as.data.frame()
-openxlsx::write.xlsx(cohenR, file = "imaging_visualizations/CohenF_ReHo_Stats.xlsx", colNames = TRUE, borders = "columns")
+openxlsx::write.xlsx(cohenR, file = "imaging_visualizations/CohenF_ReHo_Stats.xlsx", colNames = TRUE, borders = "columns",overwrite=TRUE)
 
 pdf(file="imaging_visualizations/Imaging_CoehnsD.pdf",width=6,height=3)
 full_join(cohenF,cohenR) %>%
@@ -132,7 +129,7 @@ ggboxplot(tmpMelted,
           palette = c("red","black"), 
           short.panel.labs = FALSE)+
           #facet_wrap(~Region,ncol=4,nrow=3,scales="free")+
-  stat_compare_means(aes(group = Diagnosis),label = "p.signif",method = "t.test", hide.ns = TRUE)+
+  stat_compare_means(aes(group = Diagnosis),label = "p.signif",hide.ns = TRUE)+
 theme_classic()+
 theme(legend.position="none")+
 rotate_x_text(angle = 45)+
@@ -141,7 +138,7 @@ ylab("fALFF")
 dev.off()
 
 Stats <- compare_means(value ~ Diagnosis, tmpMelted, group.by = "Region",method="t.test") %>% as.data.frame()
-openxlsx::write.xlsx(Stats, file = "imaging_visualizations/Imaging_boxplot_fALFF_Stats.xlsx", colNames = TRUE, borders = "columns")
+openxlsx::write.xlsx(Stats, file = "imaging_visualizations/Imaging_boxplot_fALFF_Stats.xlsx", colNames = TRUE, borders = "columns",overwrite=TRUE)
 
 pdf(file="imaging_visualizations/Imaging_boxplot_ReHo_Simplified.pdf",width=8,height=4)
 tmpMelted <- Imaging_ASD %>% melt() %>% filter(variable == "ReHo1") %>% arrange(Region)
@@ -152,7 +149,7 @@ ggboxplot(tmpMelted,
           palette = c("red","black"), 
           short.panel.labs = FALSE)+
           #facet_wrap(~Region,ncol=4,nrow=3,scales="free")+
-  stat_compare_means(aes(group = Diagnosis),label = "p.signif",method = "t.test", hide.ns = TRUE)+
+  stat_compare_means(aes(group = Diagnosis),label = "p.signif", hide.ns = TRUE)+
 theme_classic()+
 theme(legend.position="none")+
 rotate_x_text(angle = 45)+
@@ -161,7 +158,7 @@ ylab("ReHo")
 dev.off()
 
 Stats <- compare_means(value ~ Diagnosis, tmpMelted, group.by = "Region",method="t.test") %>% as.data.frame()
-openxlsx::write.xlsx(Stats, file = "imaging_visualizations/Imaging_boxplot_ReHo_Stats.xlsx", colNames = TRUE, borders = "columns")
+openxlsx::write.xlsx(Stats, file = "imaging_visualizations/Imaging_boxplot_ReHo_Stats.xlsx", colNames = TRUE, borders = "columns",overwrite=TRUE)
 
 
 # Working on CTL only

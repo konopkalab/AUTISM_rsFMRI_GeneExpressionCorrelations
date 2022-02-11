@@ -1,24 +1,17 @@
 # Libraries and codes
-suppressPackageStartupMessages(library(ggplot2))
-suppressPackageStartupMessages(library(reshape2))
-suppressPackageStartupMessages(library(pheatmap))
-suppressPackageStartupMessages(library(ggpubr))
-suppressPackageStartupMessages(library(cowplot))
-suppressPackageStartupMessages(library(ggrepel))
-suppressPackageStartupMessages(library(preprocessCore))
-suppressPackageStartupMessages(library(dplyr))
-suppressPackageStartupMessages(library(cowplot))
-suppressPackageStartupMessages(library(xlsx))
-suppressPackageStartupMessages(library(made4))
-suppressPackageStartupMessages(library(corrplot))
-suppressPackageStartupMessages(library(tibble))
-suppressPackageStartupMessages(library(magrittr))
-suppressPackageStartupMessages(library(tidyr))
-suppressPackageStartupMessages(library(purrr))
-suppressPackageStartupMessages(library(openxlsx))
-suppressPackageStartupMessages(library(psych))
-suppressPackageStartupMessages(library(here))
-suppressPackageStartupMessages(library(matrixStats))
+suppressPackageStartupMessages({
+library(reshape2)
+library(purrr)
+library(knitr)
+library(broom)
+library(tibble)
+library(tidyverse)
+library(here)
+library(matrixStats)
+library(preprocessCore)
+library(openxlsx)
+library(psych)
+})
 source("UTILS/Utils.R")
 
 # loading genomic data and formatting expression and demographic data
@@ -57,7 +50,7 @@ p_asd1 <- p_asd[,match(demoASD$ID,colnames(p_asd))]
 #############################
 ### Pan Cortical Analysis ###
 #############################
-B=200  ## select number of times for leave-multiple-out method
+B=10  ## select number of times for leave-multiple-out method
 tmpCTL_PanCort <- vector("list", length = B)
 names <- unique(do.call(rbind,split(demoCTL,demoCTL$Region))$Region)
 for (i in 1:B)
@@ -73,7 +66,7 @@ for (i in 1:B)
                             as.data.frame()
 }
 
-B=200  ## select number of times for leave-multiple-out method
+B=10  ## select number of times for leave-multiple-out method
 tmpASD_PanCort <- vector("list", length = B)
 for (i in 1:B)
   {
@@ -106,17 +99,19 @@ for (i in 1:B)
 
 #### Combine the data
 CTL_ReHo<- resCTL_PanCort %>% 
-            bind_cols() %>%
+            purrr::reduce(full_join,by = "Gene") %>%
             #filter_at(vars(starts_with("Pval")), all_vars(. < 0.05)) %>%
             #filter_at(vars(starts_with("Rho")), all_vars(. < 0 | . > 0)) %>%
-            mutate(Rho_CTL_ReHo = rowMeans(select(., starts_with("Rho")), na.rm = TRUE), Pval_CTL_ReHo = rowMeans(select(., starts_with("Pval")), na.rm = TRUE)) %>%
+            mutate(Rho_CTL_ReHo = rowMeans(select(., starts_with("Rho")), na.rm = TRUE), 
+                   Pval_CTL_ReHo = rowMeans(select(., starts_with("Pval")), na.rm = TRUE)) %>%
             mutate(FDR_CTL_ReHo = p.adjust(Pval_CTL_ReHo,method="BH")) %>%
             select("Gene","Rho_CTL_ReHo","Pval_CTL_ReHo","FDR_CTL_ReHo")
 
 
 ASD_ReHo <- resASD_PanCort %>% 
-            bind_cols() %>%
-            mutate(Rho_ASD_ReHo = rowMeans(select(., starts_with("Rho")), na.rm = TRUE), Pval_ASD_ReHo = rowMeans(select(., starts_with("Pval")), na.rm = TRUE)) %>%
+            purrr::reduce(full_join,by = "Gene") %>%
+            mutate(Rho_ASD_ReHo = rowMeans(select(., starts_with("Rho")), na.rm = TRUE), 
+                   Pval_ASD_ReHo = rowMeans(select(., starts_with("Pval")), na.rm = TRUE)) %>%
             mutate(FDR_ASD_ReHo = p.adjust(Pval_ASD_ReHo,method="BH")) %>%
             select("Gene","Rho_ASD_ReHo","Pval_ASD_ReHo","FDR_ASD_ReHo")
 
@@ -131,7 +126,7 @@ save(CTL_ReHo,ASD_ReHo,DiffCor_ReHo, file="Permuted_Matches_Outputs/Permuted_Mat
 
 #### Combine the data
 CTL_ReHo<- resCTL_PanCort %>% 
-            bind_cols() %>%
+            purrr::reduce(full_join,by = "Gene") %>%
             filter_at(vars(starts_with("Pval")), all_vars(. < 0.05)) %>%
             filter_at(vars(starts_with("Rho")), all_vars(. < 0 | . > 0)) %>%
             mutate(Rho_CTL_ReHo = rowMeans(select(., starts_with("Rho")), na.rm = TRUE), Pval_CTL_ReHo = rowMeans(select(., starts_with("Pval")), na.rm = TRUE)) %>%
@@ -140,7 +135,7 @@ CTL_ReHo<- resCTL_PanCort %>%
 
 
 ASD_ReHo <- resASD_PanCort %>% 
-            bind_cols() %>%
+            purrr::reduce(full_join,by = "Gene") %>%
             mutate(Rho_ASD_ReHo = rowMeans(select(., starts_with("Rho")), na.rm = TRUE), Pval_ASD_ReHo = rowMeans(select(., starts_with("Pval")), na.rm = TRUE)) %>%
             mutate(FDR_ASD_ReHo = p.adjust(Pval_ASD_ReHo,method="BH")) %>%
             select("Gene","Rho_ASD_ReHo","Pval_ASD_ReHo","FDR_ASD_ReHo")
